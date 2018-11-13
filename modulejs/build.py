@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     check_call([
         "cmake",
-        os.path.expandvars("-DCMAKE_TOOLCHAIN_FILE=emsdk/emscripten/1.38.16/cmake/Modules/Platform/Emscripten.cmake"),
+        os.path.expandvars("-DCMAKE_TOOLCHAIN_FILE=emsdk/emscripten/1.38.18/cmake/Modules/Platform/Emscripten.cmake"),
         "-DCMAKE_BUILD_TYPE=Release",
         "-DCMAKE_MAKE_PROGRAM=make",
         "-G", "Unix Makefiles",
