@@ -188,7 +188,7 @@ TEST(get_play_cards,test_simple_1)
     Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, &my, 0);
     
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
-    ASSERT_EQUALS(c, card (CARD_Q, SUIT_H));
+    ASSERT_EQUALS(c, card (CARD_A, SUIT_H));
 }
 
 //==============================================================================
@@ -805,7 +805,7 @@ TEST(get_play_cards,test_lead_2)
                                 2);
     
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
-    ASSERT_EQUALS(c, card (CARD_K, SUIT_D));
+    ASSERT_EQUALS(c, card (CARD_A, SUIT_D));
 }
 
 //==============================================================================
@@ -1074,4 +1074,68 @@ TEST(get_play_cards,test_lead_not_hearts_2)
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
     ASSERT_TRUE(c != card (CARD_Q, SUIT_H));
+}
+
+//==============================================================================
+//==============================================================================
+
+TEST(get_play_cards,test_not_cheating)
+{
+
+    Hand    p0 =        {   0,
+                            {
+
+                            }
+                        },
+
+            p1 =        {   1,
+                            {
+                                card (CARD_K, SUIT_H),
+
+                            }
+                        },
+            p2 =        {   1,
+                            {
+                                card (CARD_8, SUIT_S),
+
+                            }
+                        },
+            p3 =        {   0,
+                            {
+
+                            }
+                        },
+            my_cards =  {   8,
+                            {
+                                card (CARD_5, SUIT_H),
+                                card (CARD_A, SUIT_S),
+                                card (CARD_T, SUIT_D),
+                                card (CARD_9, SUIT_H),
+                                card (CARD_3, SUIT_S),
+                                card (CARD_T, SUIT_S),
+                                card (CARD_A, SUIT_C),
+                                card (CARD_K, SUIT_C),
+
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,test_not_cheating)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 8;
+    bid.trump = TRUMP_N;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                1,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                3);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_TRUE(c != card (CARD_5, SUIT_H));
 }

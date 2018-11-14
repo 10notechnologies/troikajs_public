@@ -82,17 +82,24 @@ uint8_t VALID_INDICES[] = {
 float get_cost (Card c, bool i_can_win, TrumpSuit trump_suit,
                 bool five_was_played, bool three_was_played,
                 bool has_5, bool has_3,
-                uint8_t count_suit, uint8_t trick_number)
+                uint8_t count_suit, uint8_t trick_number, Hand *my_cards)
 {
     CardFace card_face = card_to_face(c);
     CardSuit card_suit = card_to_suit(c);
-
-    float cost = card_face;
     
     // If we're going to lose, play normal
+    float cost = card_face;
     if (!i_can_win)
         return cost;
-        
+
+    // Play best cards if we have all the cards up to the ace
+    bool is_run_to_ace = true;
+    for (uint8_t c = card_face; c <= CARD_A; ++c)
+        is_run_to_ace |= has_card(my_cards, card((CardFace) c, card_suit));
+
+    if (is_run_to_ace)
+        cost = CARD_A + (CARD_A - card_face);
+    
     // If playing for 5
     if (trump_suit != TRUMP_N && !has_5 && !five_was_played) {
     
@@ -697,7 +704,7 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
         bool i_can_win = can_win & (1 << my_index);
         
         p_score = expected (p_score, i_can_win, my_cards->cards[c], highest_bid.trump, five_was_played, three_was_played, has_5, has_3, count_suit, trick_number);
-        float p_cost = get_cost (my_cards->cards[c], i_can_win, highest_bid.trump, five_was_played, three_was_played, has_5, has_3, count_suit, trick_number);
+        float p_cost = get_cost (my_cards->cards[c], i_can_win, highest_bid.trump, five_was_played, three_was_played, has_5, has_3, count_suit, trick_number, my_cards);
 
 #if DEBUG_LOG
         std::cout << " Probability: " << card_name(my_cards->cards[c]) << ", can_win=" << can_win << ", p_score=" << p_score << ", cost=" << p_cost << ", p_score_p0_p2=" << p_score_p0_p2 << ", p_score_p1_p3=" << p_score_p1_p3 << std::endl;
@@ -715,3 +722,4 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
 
 //==============================================================================
 //==============================================================================
+
