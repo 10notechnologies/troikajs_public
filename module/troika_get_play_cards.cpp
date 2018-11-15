@@ -82,7 +82,10 @@ uint8_t VALID_INDICES[] = {
 float get_cost (Card c, bool i_can_win, TrumpSuit trump_suit,
                 bool five_was_played, bool three_was_played,
                 bool has_5, bool has_3,
-                uint8_t count_suit, uint8_t trick_number, Hand *my_cards)
+                uint8_t count_suit,
+                uint8_t trick_number,
+                uint8_t num_played,
+                Hand *my_cards)
 {
     CardFace card_face = card_to_face(c);
     CardSuit card_suit = card_to_suit(c);
@@ -95,17 +98,17 @@ float get_cost (Card c, bool i_can_win, TrumpSuit trump_suit,
     // Play best cards if we have all the cards up to the ace
     bool is_run_to_ace = true;
     for (uint8_t c = card_face; c <= CARD_A; ++c)
-        is_run_to_ace |= has_card(my_cards, card((CardFace) c, card_suit));
+        is_run_to_ace &= has_card(my_cards, card((CardFace) c, card_suit));
 
     if (is_run_to_ace)
         cost = CARD_A + (CARD_A - card_face);
-    
+        
     // If playing for 5
     if (trump_suit != TRUMP_N && !has_5 && !five_was_played) {
     
         // Make other hearts more likely to get played
-        if ( card_face != CARD_5 && card_suit == SUIT_H)
-            cost *= 0.9f;
+        if (card_suit == SUIT_H)
+            cost *= 1.01f;
         
     }
     
@@ -120,7 +123,8 @@ float expected (float p_score, bool i_can_win, Card c, TrumpSuit trump_suit,
                 bool five_was_played, bool three_was_played,
                 bool has_5, bool has_3,
                 uint8_t count_suit,
-                uint8_t trick_number)
+                uint8_t trick_number,
+                uint8_t num_played)
 {
     CardFace card_face = card_to_face(c);
     CardSuit card_suit = card_to_suit(c);
@@ -133,7 +137,7 @@ float expected (float p_score, bool i_can_win, Card c, TrumpSuit trump_suit,
     if (trump_suit != TRUMP_N && !has_5 && !five_was_played) {
     
         // Play Ace of Hearts right away
-        if (trick_number == 0 && c == card(CARD_A,SUIT_H))
+        if (trick_number == 0 && c == card(CARD_A,SUIT_H) && num_played==0)
             return p_score + 2.0f;    // Force this card
 
         // Play other aces right away
@@ -261,14 +265,15 @@ int32_t get_winner_rankings (CardSuit first_suit, TrumpSuit trump_suit, uint8_t 
     int loser_had_5  = (had_5 && (who_had_5 != winner_team)) ? 1 : 0;
     int winner_had_3 = (had_3 && (who_had_3 == winner_team)) ? 1 : 0;
     
-    const int32_t PENALTY = 3;
+    const int32_t PENALTY_5 = 9;    // 9 works for not leading with 5
+    const int32_t PENALTY_3 = 4;
 
     if (winner_team == 0) {
-        *score_p0_p2 = 1 + (had_3 ? -3 : 0) + (had_5 ? +5 : 0) - (winner_had_3 * 3 * PENALTY);
-        *score_p1_p3 = 0 + (had_3 ? +0 : 0) + (had_5 ? +0 : 0) - (loser_had_5 * 5 * PENALTY);
+        *score_p0_p2 = 1 + (had_3 ? -3 : 0) + (had_5 ? +5 : 0) - (winner_had_3 * 3 * PENALTY_3);
+        *score_p1_p3 = 0 + (had_3 ? +0 : 0) + (had_5 ? +0 : 0) - (loser_had_5 * 5 * PENALTY_5);
     } else {
-        *score_p1_p3 = 1 + (had_3 ? -3 : 0) + (had_5 ? +5 : 0) - (winner_had_3 * 3 * PENALTY);
-        *score_p0_p2 = 0 + (had_3 ? +0 : 0) + (had_5 ? +0 : 0) - (loser_had_5 * 5 * PENALTY);
+        *score_p1_p3 = 1 + (had_3 ? -3 : 0) + (had_5 ? +5 : 0) - (winner_had_3 * 3 * PENALTY_3);
+        *score_p0_p2 = 0 + (had_3 ? +0 : 0) + (had_5 ? +0 : 0) - (loser_had_5 * 5 * PENALTY_5);
     }
 
     return winner;
@@ -324,6 +329,7 @@ void set_suit_probability (uint8_t player, CardSuit suit, float value, float pro
 
 void calc_probabilities (   CardSuit first_suit,
                             TrumpSuit trump_suit,
+                            Hand *my_cards,
                             uint8_t my_index,
                             uint8_t index,
                             Card card_buffer[4],
@@ -341,13 +347,17 @@ void calc_probabilities (   CardSuit first_suit,
         int32_t score_p1_p3;
         int32_t winner = get_winner_rankings(first_suit, trump_suit, card_buffer, probability, &score_p0_p2, &score_p1_p3);
         
+        // Lower probability of large score differences
+        // NOTE: DON'T DO THIS... It negates the penalties of losing 5
+        //probability /= std::abs(score_p0_p2 - score_p1_p3);
+        
         can_win |= (1 << winner);
 
         p_score_p0_p2 += probability * score_p0_p2;
         p_score_p1_p3 += probability * score_p1_p3;
         p_count += 1;
 
-#if DEBUG_LOG
+//#if DEBUG_LOG
 //        std::cout << "  Try: ";
 //        for (uint32_t i = 0; i < 4; ++i) {
 //            std::cout << card_name(card_buffer[i]) << " ";
@@ -356,7 +366,7 @@ void calc_probabilities (   CardSuit first_suit,
 //        std::cout << score_p0_p2 << " ";
 //        std::cout << score_p1_p3 << " ";
 //        std::cout << " prob " << probability << std::endl;
-#endif
+//#endif
 
         
     } else {
@@ -368,11 +378,16 @@ void calc_probabilities (   CardSuit first_suit,
             Card card_buffer_copy[4] = { card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3] };
             Card ci = VALID_INDICES[c];  // Same as card
             
-            // Make sure card isn't played
             bool skip = false;
+            
+            // Make sure card isn't in our hand
+            if (has_card(my_cards, ci))
+                skip |= true;
+
+            // Make sure card isn't played
             for (uint8_t cc = 0; cc < 4; ++cc) {
                 if (card_buffer_copy[cc] == ci) {
-                    skip = true;
+                    skip |= true;
                 }
             }
 
@@ -380,7 +395,7 @@ void calc_probabilities (   CardSuit first_suit,
                 float cp = probabilities[ci][index];
                 card_buffer_copy[index] = ci;
                 
-                calc_probabilities(first_suit, trump_suit, my_index, index, card_buffer_copy, probability * cp, depth+1, can_win, p_score_p0_p2, p_score_p1_p3, p_count, probabilities);
+                calc_probabilities(first_suit, trump_suit, my_cards, my_index, index, card_buffer_copy, probability * cp, depth+1, can_win, p_score_p0_p2, p_score_p1_p3, p_count, probabilities);
             }
             
         }
@@ -696,15 +711,15 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
         float p_score_p1_p3 = 0.0F;
 
         // Calc probability of card winning
-        calc_probabilities(first_suit, highest_bid.trump, my_index, my_index, played_cards, 1.0F, num_played, can_win, p_score_p0_p2, p_score_p1_p3, p_count, probabilities);
+        calc_probabilities(first_suit, highest_bid.trump, my_cards, my_index, my_index, played_cards, 1.0F, num_played, can_win, p_score_p0_p2, p_score_p1_p3, p_count, probabilities);
         p_score_p0_p2 /= p_count;
         p_score_p1_p3 /= p_count;
 
         float p_score = (my_index == 0 || my_index == 2) ? (p_score_p0_p2 - p_score_p1_p3) : (p_score_p1_p3 - p_score_p0_p2);
         bool i_can_win = can_win & (1 << my_index);
         
-        p_score = expected (p_score, i_can_win, my_cards->cards[c], highest_bid.trump, five_was_played, three_was_played, has_5, has_3, count_suit, trick_number);
-        float p_cost = get_cost (my_cards->cards[c], i_can_win, highest_bid.trump, five_was_played, three_was_played, has_5, has_3, count_suit, trick_number, my_cards);
+        p_score = expected (p_score, i_can_win, my_cards->cards[c], highest_bid.trump, five_was_played, three_was_played, has_5, has_3, count_suit, trick_number, num_played);
+        float p_cost = get_cost (my_cards->cards[c], i_can_win, highest_bid.trump, five_was_played, three_was_played, has_5, has_3, count_suit, trick_number, num_played, my_cards);
 
 #if DEBUG_LOG
         std::cout << " Probability: " << card_name(my_cards->cards[c]) << ", can_win=" << can_win << ", p_score=" << p_score << ", cost=" << p_cost << ", p_score_p0_p2=" << p_score_p0_p2 << ", p_score_p1_p3=" << p_score_p1_p3 << std::endl;
