@@ -52,6 +52,8 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
 //==============================================================================
 //==============================================================================
 
+#if 1
+
 TEST(get_play_cards,test_crash_wrong_turn)
 {
 
@@ -643,7 +645,7 @@ TEST(get_play_cards,test_lead_1)
                                 card (CARD_A, SUIT_D),
                                 card (CARD_T, SUIT_C),
                                 card (CARD_A, SUIT_C),
-                                card (CARD_8, SUIT_S),
+                                card (CARD_8, SUIT_H),
                                 card (CARD_K, SUIT_D),
 
                             }
@@ -1179,7 +1181,7 @@ TEST(get_play_cards,lead_not_with_5_2)
                                 card (CARD_T, SUIT_C),
                                 card (CARD_Q, SUIT_C),
                                 card (CARD_9, SUIT_S),
-                                card (CARD_8, SUIT_H),
+                                card (CARD_8, SUIT_S),
                                 card (CARD_J, SUIT_S),
 
                             }
@@ -1466,6 +1468,129 @@ TEST(get_play_cards,test_lead_hearts_3)
 //==============================================================================
 //==============================================================================
 
+TEST(get_play_cards,test_lead_hearts_4)
+{
+
+    Hand    p0 =        {   0,
+                            {
+
+                            }
+                        },
+
+            p1 =        {   0,
+                            {
+
+                            }
+                        },
+            p2 =        {   0,
+                            {
+
+                            }
+                        },
+            p3 =        {   0,
+                            {
+
+                            }
+                        },
+            my_cards =  {   8,
+                            {
+                                card (CARD_K, SUIT_H),
+                                card (CARD_9, SUIT_H),
+                                card (CARD_J, SUIT_D),
+                                card (CARD_J, SUIT_H),
+                                card (CARD_Q, SUIT_D),
+                                card (CARD_T, SUIT_C),
+                                card (CARD_8, SUIT_D),
+                                card (CARD_9, SUIT_C),
+
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,test_lead_hearts_4)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 7;
+    bid.trump = TRUMP_D;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                2,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                2);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_TRUE(c != card (CARD_K, SUIT_H));
+}
+
+//==============================================================================
+//==============================================================================
+
+TEST(get_play_cards, test_ace_spades_1)
+{
+
+    Hand    p0 =        {   1,
+                            {
+                                card (CARD_J, SUIT_C),
+                            }
+                        },
+
+            p1 =        {   1,
+                            {
+                                card (CARD_A, SUIT_C),
+                            }
+                        },
+            p2 =        {   1,
+                            {
+                                card (CARD_7, SUIT_C),
+                            }
+                        },
+            p3 =        {   1,
+                            {
+                                card (CARD_8, SUIT_C),
+                            }
+                        },
+            my_cards =  {   7,
+                            {
+                                card (CARD_A, SUIT_S),
+                                card (CARD_8, SUIT_S),
+                                card (CARD_A, SUIT_H),
+                                card (CARD_9, SUIT_S),
+                                card (CARD_9, SUIT_C),
+                                card (CARD_K, SUIT_H),
+                                card (CARD_T, SUIT_S),
+
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,test_ace_spades_1)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 7;
+    bid.trump = TRUMP_D;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                1,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                1);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_TRUE(c != card (CARD_A, SUIT_S));
+}
+
+//==============================================================================
+//==============================================================================
+
 TEST(get_play_cards,test_waste_card)
 {
 
@@ -1527,3 +1652,321 @@ TEST(get_play_cards,test_waste_card)
 //==============================================================================
 //==============================================================================
 
+TEST(get_play_cards,highest_to_lowest)
+{
+
+    Hand    p0 =        {   1,
+                            {
+                                card (CARD_J, SUIT_H),
+
+                            }
+                        },
+
+            p1 =        {   1,
+                            {
+                                card (CARD_7, SUIT_C),
+
+                            }
+                        },
+            p2 =        {   1,
+                            {
+                                card (CARD_8, SUIT_H),
+
+                            }
+                        },
+            p3 =        {   1,
+                            {
+                                card (CARD_A, SUIT_H),
+
+                            }
+                        },
+            my_cards =  {   7,
+                            {
+                                card (CARD_K, SUIT_H),
+                                card (CARD_Q, SUIT_H),
+                                card (CARD_9, SUIT_S),
+                                card (CARD_K, SUIT_C),
+                                card (CARD_8, SUIT_D),
+                                card (CARD_A, SUIT_S),
+                                card (CARD_9, SUIT_H),
+
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,highest_to_lowest)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 8;
+    bid.trump = TRUMP_N;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                3,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                3);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_EQUALS(c, card (CARD_K, SUIT_H));
+}
+
+//==============================================================================
+//==============================================================================
+
+TEST(get_play_cards,dont_throw_lead)
+{
+
+    Hand    p0 =        {   2,
+                            {
+                                card (CARD_5, SUIT_H),
+                                card (CARD_J, SUIT_S),
+
+                            }
+                        },
+
+            p1 =        {   2,
+                            {
+                                card (CARD_9, SUIT_H),
+                                card (CARD_8, SUIT_S),
+
+                            }
+                        },
+            p2 =        {   2,
+                            {
+                                card (CARD_A, SUIT_H),
+                                card (CARD_A, SUIT_S),
+
+                            }
+                        },
+            p3 =        {   2,
+                            {
+                                card (CARD_8, SUIT_H),
+                                card (CARD_K, SUIT_S),
+
+                            }
+                        },
+            my_cards =  {   6,
+                            {
+                                card (CARD_8, SUIT_C),
+                                card (CARD_K, SUIT_H),
+                                card (CARD_K, SUIT_D),
+                                card (CARD_J, SUIT_C),
+                                card (CARD_9, SUIT_C),
+                                card (CARD_9, SUIT_S),
+
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,dont_throw_lead)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 7;
+    bid.trump = TRUMP_N;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                2,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                2);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_TRUE(c != card (CARD_8, SUIT_C));
+}
+
+//==============================================================================
+//==============================================================================
+
+TEST(get_play_cards,dont_bleed_trump)
+{
+
+    Hand    p0 =        {   0,
+                            {
+
+                            }
+                        },
+
+            p1 =        {   0,
+                            {
+
+                            }
+                        },
+            p2 =        {   0,
+                            {
+
+                            }
+                        },
+            p3 =        {   0,
+                            {
+                            
+                            }
+                        },
+            my_cards =  {   8,
+                            {
+                                card (CARD_T, SUIT_C),
+                                card (CARD_K, SUIT_C),
+                                card (CARD_Q, SUIT_H),
+                                card (CARD_J, SUIT_H),
+                                card (CARD_Q, SUIT_D),
+                                card (CARD_K, SUIT_D),
+                                card (CARD_Q, SUIT_S),
+                                card (CARD_J, SUIT_S),
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,dont_bleed_trump)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 7;
+    bid.trump = TRUMP_C;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                2,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                2);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_TRUE(c != card (CARD_T, SUIT_C) &&
+                c != card (CARD_K, SUIT_C));
+}
+
+//==============================================================================
+//==============================================================================
+
+TEST(get_play_cards,do_bleed_some_trump)
+{
+
+    Hand    p0 =        {   0,
+                            {
+
+                            }
+                        },
+
+            p1 =        {   0,
+                            {
+
+                            }
+                        },
+            p2 =        {   0,
+                            {
+
+                            }
+                        },
+            p3 =        {   0,
+                            {
+                            
+                            }
+                        },
+            my_cards =  {   8,
+                            {
+                                card (CARD_T, SUIT_C),
+                                card (CARD_K, SUIT_C),
+                                card (CARD_Q, SUIT_C),
+                                card (CARD_J, SUIT_C),
+                                card (CARD_Q, SUIT_D),
+                                card (CARD_K, SUIT_D),
+                                card (CARD_Q, SUIT_S),
+                                card (CARD_J, SUIT_S),
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,dont_bleed_trump)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 7;
+    bid.trump = TRUMP_C;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                2,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                2);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_TRUE(c == card (CARD_T, SUIT_C));
+}
+
+//==============================================================================
+//==============================================================================
+
+#endif
+
+TEST(get_play_cards,do_play_low_trumps)
+{
+
+    Hand    p0 =        {   1,
+                            {
+                                card (CARD_K, SUIT_D)
+                            }
+                        },
+
+            p1 =        {   1,
+                            {
+                                card (CARD_A, SUIT_D)
+                            }
+                        },
+            p2 =        {   0,
+                            {
+
+                            }
+                        },
+            p3 =        {   0,
+                            {
+                            
+                            }
+                        },
+            my_cards =  {   8,
+                            {
+                                card (CARD_A, SUIT_C),
+                                card (CARD_8, SUIT_C),
+                                card (CARD_Q, SUIT_H),
+                                card (CARD_J, SUIT_H),
+                                card (CARD_T, SUIT_H),
+                                card (CARD_T, SUIT_S),
+                                card (CARD_Q, SUIT_S),
+                                card (CARD_J, SUIT_S),
+                            }
+                        };
+
+    std::cout << std::endl << "---TEST(get_play_cards,dont_bleed_trump)---" << std::endl;
+
+    Bid bid;
+    bid.bid = 7;
+    bid.trump = TRUMP_C;
+
+    Card c = ai_get_play_cards (false,
+                                62,
+                                7,
+                                0,
+                                bid,
+                                &p0,
+                                &p1,
+                                &p2,
+                                &p3,
+                                &my_cards,
+                                2);
+    std::cout << " AI Picked card: " << card_name(c) << std::endl;
+    ASSERT_TRUE(c == card (CARD_8, SUIT_C));
+}
+
+//==============================================================================
+//==============================================================================

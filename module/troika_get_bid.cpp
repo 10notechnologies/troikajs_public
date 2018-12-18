@@ -99,7 +99,7 @@ Bid ai_get_bid (int32_t     rule_pass_cards,
             }
         }
     }
-
+    
     // Sum up different suits
     float suits[4];
     suits[SUIT_C] = weighted_sum_for_suit(SUIT_C, my_cards);
@@ -143,20 +143,21 @@ Bid ai_get_bid (int32_t     rule_pass_cards,
 
     bool no = false;
 
-    if ((nums[SUIT_C] >= 4 && has_card(my_cards, card(CARD_A, SUIT_C)) && has_card(my_cards, card(CARD_K, SUIT_C))) ||
-        (nums[SUIT_C] >= 5 && has_card(my_cards, card(CARD_A, SUIT_C)) && has_card(my_cards, card(CARD_Q, SUIT_C))) ) {
-        no = true;
-    }
-
-    if ((nums[SUIT_D] >= 4 && has_card(my_cards, card(CARD_A, SUIT_D)) && has_card(my_cards, card(CARD_K, SUIT_D))) ||
-        (nums[SUIT_D] >= 5 && has_card(my_cards, card(CARD_A, SUIT_D)) && has_card(my_cards, card(CARD_Q, SUIT_D))) ) {
-        no = true;
-    }
-
-    if ((nums[SUIT_S] >= 4 && has_card(my_cards, card(CARD_A, SUIT_S)) && has_card(my_cards, card(CARD_K, SUIT_S))) ||
-        (nums[SUIT_S] >= 5 && has_card(my_cards, card(CARD_A, SUIT_S)) && has_card(my_cards, card(CARD_Q, SUIT_S))) ) {
-        no = true;
-    }
+// Removed as per kevin
+//    if ((nums[SUIT_C] >= 4 && has_card(my_cards, card(CARD_A, SUIT_C)) && has_card(my_cards, card(CARD_K, SUIT_C))) ||
+//        (nums[SUIT_C] >= 5 && has_card(my_cards, card(CARD_A, SUIT_C)) && has_card(my_cards, card(CARD_Q, SUIT_C))) ) {
+//        no = true;
+//    }
+//
+//    if ((nums[SUIT_D] >= 4 && has_card(my_cards, card(CARD_A, SUIT_D)) && has_card(my_cards, card(CARD_K, SUIT_D))) ||
+//        (nums[SUIT_D] >= 5 && has_card(my_cards, card(CARD_A, SUIT_D)) && has_card(my_cards, card(CARD_Q, SUIT_D))) ) {
+//        no = true;
+//    }
+//
+//    if ((nums[SUIT_S] >= 4 && has_card(my_cards, card(CARD_A, SUIT_S)) && has_card(my_cards, card(CARD_K, SUIT_S))) ||
+//        (nums[SUIT_S] >= 5 && has_card(my_cards, card(CARD_A, SUIT_S)) && has_card(my_cards, card(CARD_Q, SUIT_S))) ) {
+//        no = true;
+//    }
 
     if ((has_card(my_cards, card(CARD_A, SUIT_H)) && has_card(my_cards, card(CARD_K, SUIT_H))) ||
         (nums[SUIT_H] >= 4 && has_card(my_cards, card(CARD_A, SUIT_H)) && has_card(my_cards, card(CARD_Q, SUIT_H))) ) {

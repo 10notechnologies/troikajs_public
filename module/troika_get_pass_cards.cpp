@@ -31,6 +31,7 @@
 #if DEBUG_LOG
     #include <iostream>
 #endif
+#include <limits>
 
 //==============================================================================
 // Returns the best cards to pass. out_cards must point to array of at least
@@ -85,7 +86,17 @@ void ai_get_pass_cards (int32_t     rule_pass_cards,
 
     for (int32_t s = 0; s < NUM_SUITS; ++s) {
 
-        if (suit_counts[s] == 1) {
+        if (suit_counts[s] == 2) {
+            int32_t index = first_index_of (my_cards, (CardSuit) s);    // Get the first of the two
+            add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
+            remove_card(my_cards, index);                               // Remove it from current hand
+
+            index = first_index_of (my_cards, (CardSuit) s);            // Get the second of the two
+            add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
+            remove_card(my_cards, index);                               // Remove it from current hand
+            break;
+            
+        } else if (suit_counts[s] == 1) {
             int32_t index = first_index_of (my_cards, (CardSuit) s);    // Get the loner
             add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
             remove_card(my_cards, index);                               // Remove it from current hand
@@ -93,55 +104,29 @@ void ai_get_pass_cards (int32_t     rule_pass_cards,
 
     }
     
-    // Early out
-    if (candidates.num_cards >= 2) {
-        //Pick the two crappiest and send them
-//        if (candidates.num_cards > 2)
-//            sort(&candidates);
-
-        // Copy card results
-        for (int32_t i = 0; i < 2; ++i)
-            out_cards[i] = candidates.cards[i];
+    while (candidates.num_cards < 2) {
     
-    }
-
-    //
-    // Check for any doubles if there's two slots left
-    //
-
-    if (candidates.num_cards == 0) {
-        for (int32_t s = 0; s < NUM_SUITS; ++s) {
-
-            if (suit_counts[s] == 2) {
-                int32_t index = first_index_of (my_cards, (CardSuit) s);    // Get the first of the two
-                add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
-                remove_card(my_cards, index);                               // Remove it from current hand
-
-                index = first_index_of (my_cards, (CardSuit) s);            // Get the second of the two
-                add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
-                remove_card(my_cards, index);                               // Remove it from current hand
-
-                break;
+        float value = std::numeric_limits<float>::infinity();
+        int32_t value_i = 0;
+        
+        for (int32_t i = 0; i < my_cards->num_cards; ++i) {
+            //CardSuit card_suit = card_to_suit (my_cards->cards[i]);
+            CardFace card_face = card_to_face (my_cards->cards[i]);
+            float test_value = card_face;
+            if (test_value < value) {
+                value = test_value;
+                value_i = i;
             }
-
         }
-
+    
+        add_card(&candidates, get(my_cards,value_i));                 // Add to a new hand for storage
+        remove_card(my_cards, value_i);                               // Remove it from current hand
     }
-
-    // Get random cards. TODO! Fix this
-    if (candidates.num_cards < 2) {
-        add_card(&candidates, get(my_cards,0));
-        remove_card(my_cards, 0);                               // Remove it from current hand
-    }
-    if (candidates.num_cards < 2) {
-        add_card(&candidates, get(my_cards,0));
-        remove_card(my_cards, 0);                               // Remove it from current hand
-    }
-
+    
     // Copy card results
     for (int32_t i = 0; i < 2; ++i)
         out_cards[i] = candidates.cards[i];
-    
+
 }
 
 //==============================================================================

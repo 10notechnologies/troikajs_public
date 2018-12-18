@@ -55,10 +55,10 @@ TrumpSuit ai_get_trump  (int32_t    rule_pass_cards,
         throw AIException("rule_minimum_bid out of range");
     }
 
-
     // Count all the suits
     int32_t nums[4];
     count_suits_in_hand (my_cards, nums);
+    
     
     // Sum up different suits
     float suits[4];

@@ -42,4 +42,7 @@ if __name__ == "__main__":
 
     check_call(["make"])
 
+    check_call(["cp","aicpp.js", "../../../../web/troikajs/src/app/emscripten/aicpp.js"])
+    check_call(["cp","aicpp.js", "../../../../app/troikajs/src/app/emscripten/aicpp.js"])
+
 
