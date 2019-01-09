@@ -1,6 +1,6 @@
 # Machine Learning Dataset
 
-This directory contains all of the played hands for every single multiplayer game.
+This directory contains all of the played hands for every single multiplayer game. Cards are identified by a two character sequence. For example the 8 of spades would be 8S and the 10 of hearts would be TH.
 
 ## playedhand.csv
 
