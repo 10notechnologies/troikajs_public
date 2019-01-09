@@ -5,7 +5,7 @@ This directory contains all of the played hands for every single multiplayer gam
 ## playedhand.csv
 
 This is the schema for the table.
-`
+```
                                                                  Table "public.playedhand"
             Column             |           Type           |                        Modifiers                        | Storage  | Stats target | Description 
 -------------------------------+--------------------------+---------------------------------------------------------+----------+--------------+-------------
@@ -32,4 +32,4 @@ This is the schema for the table.
 Indexes:
     "playedhand_pkey" PRIMARY KEY, btree (id)
 
-`
+```
