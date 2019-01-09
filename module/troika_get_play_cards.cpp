@@ -35,6 +35,8 @@
 #include <limits>
 #include <cstddef>
 
+int32_t get_winner (CardSuit first_suit, TrumpSuit trump_suit, uint8_t played_cards[4]);
+
 //==============================================================================
 //==============================================================================
 
@@ -79,12 +81,15 @@ uint8_t VALID_INDICES[] = {
 //==============================================================================
 //==============================================================================
 
-float get_cost (Card c, bool i_can_win, TrumpSuit trump_suit,
+float get_cost (Card c,
+                bool i_can_win,
+                CardSuit first_suit,
+                TrumpSuit trump_suit,
                 bool five_was_played, bool three_was_played,
-                uint8_t count_suit,
                 uint8_t trick_number,
                 uint8_t num_played,
                 Hand *my_cards,
+                uint8_t played_cards[4],
                 uint8_t my_index,
                 float probabilities[255][4])
 {
@@ -129,12 +134,16 @@ float get_cost (Card c, bool i_can_win, TrumpSuit trump_suit,
     return cost;
 }
 
-float expected (float p_score, bool i_can_win, Card c, TrumpSuit trump_suit,
+float expected (float p_score,
+                bool i_can_win,
+                Card c,
+                CardSuit first_suit,
+                TrumpSuit trump_suit,
                 bool five_was_played, bool three_was_played,
-                uint8_t count_suit,
                 uint8_t trick_number,
                 uint8_t num_played,
                 Hand *my_cards,
+                uint8_t played_cards[4],
                 uint8_t my_index,
                 float probabilities[255][4])
 {
@@ -143,15 +152,25 @@ float expected (float p_score, bool i_can_win, Card c, TrumpSuit trump_suit,
     
     bool has_3 = has_card(my_cards, card(CARD_3, SUIT_S));
     bool has_5 = has_card(my_cards, card(CARD_5, SUIT_H));
+    
+    uint8_t count_suit = count_suit_in_hand(my_cards, card_suit);
 
+    // Force play 5H if partner played AH
+    uint8_t partner_index = (my_index + 2) % 4;
+    if (c == card(CARD_5, SUIT_H) &&
+        (played_cards[partner_index] == card(CARD_A, SUIT_H)) &&
+        get_winner (first_suit, trump_suit, played_cards) == partner_index) {
+        return p_score + 5.0f;    // Force this card
+    }
+    
     // If we're going to lose, play normal
     if (!i_can_win)
         return p_score;
     
     // Bleed out one trump
-    // 1 - If AI bids (regular) - in clubs, diamonds or spades trump
-    // 2- if AI bids (regular) - in hearts *and has the 5 as well
-    // 3-if AI has a min of 3 trump cards in its hand
+    // 1 -If AI bids (regular) - in clubs, diamonds or spades trump
+    // 2- If AI bids (regular) - in hearts *and has the 5 as well
+    // 3- If AI has a min of 3 trump cards in its hand
     // 4- AI does not have the Ace
     // 5-will lead out in lowest card (in hearts not the 5 obviously) so would be 8 and up. This will “bleed out” *some trump!
     if ((uint8_t) card_suit == (uint8_t) trump_suit && count_suit>=3 && !has_card(my_cards, card(CARD_A, card_suit)) ) {
@@ -169,8 +188,16 @@ float expected (float p_score, bool i_can_win, Card c, TrumpSuit trump_suit,
             }
             
             if (lowest_face == card_face)
-                return p_score + 2.0f;    // Force this card
+                return p_score + 5.0f;    // Force this card
         }
+    }
+    
+    // Normal hand, play ace hearts
+    if ( (trump_suit == TRUMP_C || trump_suit == TRUMP_D || trump_suit == TRUMP_S) &&
+        c == card(CARD_A,SUIT_H) &&
+        num_played==0 &&
+        !five_was_played) {
+        return p_score + 5.0f;    // Force this card
     }
 
     // If playing for 5
@@ -178,14 +205,14 @@ float expected (float p_score, bool i_can_win, Card c, TrumpSuit trump_suit,
     
         // Play Ace of Hearts right away
         if (trick_number == 0 && c == card(CARD_A,SUIT_H) && num_played==0)
-            return p_score + 2.0f;    // Force this card
+            return p_score + 5.0f;    // Force this card
 
         // Play other aces right away
         if (trick_number == 0 &&
             card_face == CARD_A &&
             (uint8_t) card_suit != (uint8_t) trump_suit &&
             (card_suit == SUIT_C || card_suit == SUIT_D || (has_3 && card_suit == SUIT_S)))
-            return p_score + 1.5f;    // Force this card
+            return p_score + 4.0f;    // Force this card
 
         // Save hearts
         if ((trick_number > 0 || num_played == 0) && (uint32_t) card_suit == SUIT_H)
@@ -206,13 +233,13 @@ float expected (float p_score, bool i_can_win, Card c, TrumpSuit trump_suit,
             (card_suit != SUIT_S || card_face <= CARD_9) &&
             trick_number == 0 &&
             count_suit <= 1)
-            return p_score + 1.0f;    // Force this card
+            return p_score + 3.0f;    // Force this card
         
     } else if (trump_suit != TRUMP_N && !has_5 && five_was_played) {
     
         // Play Rest of Hearts right away
         if (trump_suit != TRUMP_H && card_suit == SUIT_H && card_face != CARD_A)
-            return p_score + 1.0f;    // Force this card
+            return p_score + 3.0f;    // Force this card
 
     }
     
@@ -233,6 +260,9 @@ int32_t get_winner (CardSuit first_suit, TrumpSuit trump_suit, uint8_t played_ca
     int32_t winner = -1;
     if (trump_suit != TRUMP_N) {
         for (uint32_t i = 0; i < 4; ++i) {
+            if (played_cards[i] == 0)
+                continue;
+        
             CardSuit card_suit = card_to_suit(played_cards[i]);
             
             if ( (uint32_t) card_suit != (uint32_t) trump_suit)
@@ -249,9 +279,12 @@ int32_t get_winner (CardSuit first_suit, TrumpSuit trump_suit, uint8_t played_ca
     // Calculate winner if not trumped
     if (winner == -1) {
         for (uint32_t i = 0; i < 4; ++i) {
+            if (played_cards[i] == 0)
+                continue;
+
             CardSuit card_suit = card_to_suit(played_cards[i]);
             
-            if ( card_suit != first_suit)
+            if (card_suit != first_suit)
                 continue;
             
             if (winner == -1) {
@@ -742,9 +775,6 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
     float   best_score_cost = std::numeric_limits<float>::infinity();
 
     for (uint32_t c = 0; c < my_cards->num_cards; ++c) {
-        
-        uint8_t count_suit = count_suit_in_hand(my_cards, card_to_suit(my_cards->cards[c]));
-    
         played_cards[my_index] = my_cards->cards[c];
         
         // First card info because this card leads a new hand
@@ -767,8 +797,8 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
         float p_score = (my_index == 0 || my_index == 2) ? (p_score_p0_p2 - p_score_p1_p3) : (p_score_p1_p3 - p_score_p0_p2);
         bool i_can_win = can_win & (1 << my_index);
         
-        p_score = expected (p_score, i_can_win, my_cards->cards[c], highest_bid.trump, five_was_played, three_was_played, count_suit, trick_number, num_played, my_cards, my_index, probabilities);
-        float p_cost = get_cost (my_cards->cards[c], i_can_win, highest_bid.trump, five_was_played, three_was_played, count_suit, trick_number, num_played, my_cards, my_index, probabilities);
+        p_score = expected (p_score, i_can_win, my_cards->cards[c], first_suit, highest_bid.trump, five_was_played, three_was_played, trick_number, num_played, my_cards, played_cards, my_index, probabilities);
+        float p_cost = get_cost (my_cards->cards[c], i_can_win, first_suit, highest_bid.trump, five_was_played, three_was_played, trick_number, num_played, my_cards, played_cards, my_index, probabilities);
 
 #if DEBUG_LOG
         std::cout << " Probability: " << card_name(my_cards->cards[c]) << ", can_win=" << can_win << ", p_score=" << p_score << ", cost=" << p_cost << ", p_score_p0_p2=" << p_score_p0_p2 << ", p_score_p1_p3=" << p_score_p1_p3 << std::endl;

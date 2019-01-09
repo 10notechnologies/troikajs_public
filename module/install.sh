@@ -1,5 +1,5 @@
 #!/bin/sh
 
-python setup.py install
+/usr/bin/python setup.py install
 
 
