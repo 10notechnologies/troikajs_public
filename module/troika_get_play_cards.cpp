@@ -503,7 +503,9 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
                         Hand        *p1_played_cards,
                         Hand        *p2_played_cards,
                         Hand        *p3_played_cards,
-                        
+
+                        Hand        *my_passed_cards,
+
                         Hand        *my_cards,
                         int32_t     my_index)
 {
@@ -533,6 +535,13 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
     if (p3_played_cards->num_cards > 8) {
         throw AIException("Played cards out of range");
     }
+    
+    if (rule_pass_cards) {
+        if (my_passed_cards->num_cards != 2) {
+            throw AIException("Passed cards out of range");
+        }
+    }
+    
     if (my_cards->num_cards > 8) {
         throw AIException("My cards out of range");
     }
@@ -596,6 +605,20 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
         set_probabilities (VALID_INDICES[i], 0.25F, 0.25F, 0.25F, 0.25F, probabilities);
     }
 
+    //
+    // Account for passed cards
+    //
+
+    if (rule_pass_cards) {
+        uint8_t partner_index = (my_index + 2) % 4;
+
+        for (uint32_t c = 0; c < my_passed_cards->num_cards; ++c) {
+            set_card_probability (0, my_passed_cards->cards[c], (partner_index == 0) ? 1.0 : 0.0, probabilities);
+            set_card_probability (1, my_passed_cards->cards[c], (partner_index == 1) ? 1.0 : 0.0, probabilities);
+            set_card_probability (2, my_passed_cards->cards[c], (partner_index == 2) ? 1.0 : 0.0, probabilities);
+            set_card_probability (3, my_passed_cards->cards[c], (partner_index == 3) ? 1.0 : 0.0, probabilities);
+        }
+    }
 
     //
     // Play the game forward from the start

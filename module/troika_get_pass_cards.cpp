@@ -71,41 +71,107 @@ void ai_get_pass_cards (int32_t     rule_pass_cards,
     candidates.num_cards = 0;
 
     //
-    // Check for any loners in a certain suit
+    // If we have the 5H and AH, pass 5 and don't pass AH
     //
-
-    int32_t suit_counts[NUM_SUITS];
-    count_suits_in_hand (my_cards, suit_counts);
     
-#if DEBUG_LOG
-    std::cout << "Num Hearts:   " << suit_counts[SUIT_H] << std::endl;
-    std::cout << "Num Spades:   " << suit_counts[SUIT_S] << std::endl;
-    std::cout << "Num Diamonds: " << suit_counts[SUIT_D] << std::endl;
-    std::cout << "Num Clubs:    " << suit_counts[SUIT_C] << std::endl;
-#endif
+    bool has_5H = has_card(my_cards, card(CARD_5, SUIT_H));
+    bool has_AH = has_card(my_cards, card(CARD_A, SUIT_H));
 
-    for (int32_t s = 0; s < NUM_SUITS; ++s) {
-
-        if (suit_counts[s] == 2) {
-            int32_t index = first_index_of (my_cards, (CardSuit) s);    // Get the first of the two
-            add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
-            remove_card(my_cards, index);                               // Remove it from current hand
-
-            index = first_index_of (my_cards, (CardSuit) s);            // Get the second of the two
-            add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
-            remove_card(my_cards, index);                               // Remove it from current hand
-            break;
+    if (has_5H && has_AH) {
+        add_card(&candidates, card(CARD_5, SUIT_H));
+        remove_card(my_cards, index_of(my_cards, card(CARD_5, SUIT_H)));    // Remove it from current hand
+        remove_card(my_cards, index_of(my_cards, card(CARD_A, SUIT_H)));    // Remove it from current hand
+    } else if (has_5H) {
+        remove_card(my_cards, index_of(my_cards, card(CARD_5, SUIT_H)));    // Remove it from current hand
+    }
+    
+    //
+    // If we have 3S, don't pass it
+    //
+    
+    if (has_card(my_cards, card(CARD_3, SUIT_S))) {
+        remove_card(my_cards, index_of(my_cards, card(CARD_3, SUIT_S)));    // Remove it from current hand
+    }
+    
+    //
+    // Check for shitty hand
+    //
+    
+    int32_t low_cards_count = 0;
+    for (int32_t i = 0; i < my_cards->num_cards; ++i) {
+        CardFace card_face = card_to_face (my_cards->cards[i]);
+        if (card_face <= CARD_Q)
+            ++low_cards_count;
+    }
+    
+    if (low_cards_count >=6) {
+        
+        //
+        // Pick two best cards
+        //
+        
+        while (candidates.num_cards < 2) {
+            float value = -std::numeric_limits<float>::infinity();
+            int32_t value_i = 0;
             
-        } else if (suit_counts[s] == 1) {
-            int32_t index = first_index_of (my_cards, (CardSuit) s);    // Get the loner
-            add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
-            remove_card(my_cards, index);                               // Remove it from current hand
+            for (int32_t i = 0; i < my_cards->num_cards; ++i) {
+                //CardSuit card_suit = card_to_suit (my_cards->cards[i]);
+                CardFace card_face = card_to_face (my_cards->cards[i]);
+                float test_value = card_face;
+                if (test_value > value) {
+                    value = test_value;
+                    value_i = i;
+                }
+            }
+        
+            add_card(&candidates, get(my_cards,value_i));                 // Add to a new hand for storage
+            remove_card(my_cards, value_i);                               // Remove it from current hand
         }
 
     }
+
+
+    //
+    // Check for any loners in a certain suit
+    //
+
+    if (candidates.num_cards < 2) {
+        int32_t suit_counts[NUM_SUITS];
+        count_suits_in_hand (my_cards, suit_counts);
+        
+#if DEBUG_LOG
+        std::cout << "Num Hearts:   " << suit_counts[SUIT_H] << std::endl;
+        std::cout << "Num Spades:   " << suit_counts[SUIT_S] << std::endl;
+        std::cout << "Num Diamonds: " << suit_counts[SUIT_D] << std::endl;
+        std::cout << "Num Clubs:    " << suit_counts[SUIT_C] << std::endl;
+#endif
+
+        for (int32_t s = 0; s < NUM_SUITS; ++s) {
+
+            if (suit_counts[s] == 2) {
+                int32_t index = first_index_of (my_cards, (CardSuit) s);    // Get the first of the two
+                add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
+                remove_card(my_cards, index);                               // Remove it from current hand
+
+                index = first_index_of (my_cards, (CardSuit) s);            // Get the second of the two
+                add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
+                remove_card(my_cards, index);                               // Remove it from current hand
+                break;
+                
+            } else if (suit_counts[s] == 1) {
+                int32_t index = first_index_of (my_cards, (CardSuit) s);    // Get the loner
+                add_card(&candidates, get(my_cards,index));                 // Add to a new hand for storage
+                remove_card(my_cards, index);                               // Remove it from current hand
+            }
+
+        }
+    }
+    
+    //
+    // Pick two worst cards
+    //
     
     while (candidates.num_cards < 2) {
-    
         float value = std::numeric_limits<float>::infinity();
         int32_t value_i = 0;
         

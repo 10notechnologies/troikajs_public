@@ -27,6 +27,8 @@
 
 #include "troika_common.hpp"
 #include <cstring>
+#include <random>
+#include <fstream>
 #if DEBUG_LOG
     #include <iostream>
 #endif
@@ -428,6 +430,235 @@ void card_suit_to_char (CardSuit cs, char *css)
         default:
             throw AIException("Invalid trump character");
     };
+}
+
+//==============================================================================
+//==============================================================================
+
+uint8_t card_to_bits(Card c)
+{
+    switch (c) {
+        case (CARD_3 << 4 | SUIT_S):  return 0;
+        case (CARD_5 << 4 | SUIT_H):  return 1;
+        case (CARD_7 << 4 | SUIT_C):  return 2;
+        case (CARD_7 << 4 | SUIT_D):  return 3;
+        
+        case (CARD_8 << 4 | SUIT_H):  return 4;
+        case (CARD_8 << 4 | SUIT_S):  return 5;
+        case (CARD_8 << 4 | SUIT_D):  return 6;
+        case (CARD_8 << 4 | SUIT_C):  return 7;
+
+        case (CARD_9 << 4 | SUIT_H):  return 8;
+        case (CARD_9 << 4 | SUIT_S):  return 9;
+        case (CARD_9 << 4 | SUIT_D):  return 10;
+        case (CARD_9 << 4 | SUIT_C):  return 11;
+
+        case (CARD_T << 4 | SUIT_H):  return 12;
+        case (CARD_T << 4 | SUIT_S):  return 13;
+        case (CARD_T << 4 | SUIT_D):  return 14;
+        case (CARD_T << 4 | SUIT_C):  return 15;
+
+        case (CARD_J << 4 | SUIT_H):  return 16;
+        case (CARD_J << 4 | SUIT_S):  return 17;
+        case (CARD_J << 4 | SUIT_D):  return 18;
+        case (CARD_J << 4 | SUIT_C):  return 19;
+
+        case (CARD_Q << 4 | SUIT_H):  return 20;
+        case (CARD_Q << 4 | SUIT_S):  return 21;
+        case (CARD_Q << 4 | SUIT_D):  return 22;
+        case (CARD_Q << 4 | SUIT_C):  return 23;
+
+        case (CARD_K << 4 | SUIT_H):  return 24;
+        case (CARD_K << 4 | SUIT_S):  return 25;
+        case (CARD_K << 4 | SUIT_D):  return 26;
+        case (CARD_K << 4 | SUIT_C):  return 27;
+
+        case (CARD_A << 4 | SUIT_H):  return 28;
+        case (CARD_A << 4 | SUIT_S):  return 29;
+        case (CARD_A << 4 | SUIT_D):  return 30;
+        case (CARD_A << 4 | SUIT_C):  return 31;
+    }
+    
+    return 0;
+}
+
+Card bits_to_card(uint8_t b)
+{
+    switch (b) {
+        case 0: return (CARD_3 << 4 | SUIT_S);
+        case 1: return (CARD_5 << 4 | SUIT_H);
+        case 2: return (CARD_7 << 4 | SUIT_C);
+        case 3: return (CARD_7 << 4 | SUIT_D);
+        
+        case 4: return (CARD_8 << 4 | SUIT_H);
+        case 5: return (CARD_8 << 4 | SUIT_S);
+        case 6: return (CARD_8 << 4 | SUIT_D);
+        case 7: return (CARD_8 << 4 | SUIT_C);
+
+        case 8: return (CARD_9 << 4 | SUIT_H);
+        case 9: return (CARD_9 << 4 | SUIT_S);
+        case 10: return (CARD_9 << 4 | SUIT_D);
+        case 11: return (CARD_9 << 4 | SUIT_C);
+
+        case 12: return (CARD_T << 4 | SUIT_H);
+        case 13: return (CARD_T << 4 | SUIT_S);
+        case 14: return (CARD_T << 4 | SUIT_D);
+        case 15: return (CARD_T << 4 | SUIT_C);
+
+        case 16: return (CARD_J << 4 | SUIT_H);
+        case 17: return (CARD_J << 4 | SUIT_S);
+        case 18: return (CARD_J << 4 | SUIT_D);
+        case 19: return (CARD_J << 4 | SUIT_C);
+
+        case 20: return (CARD_Q << 4 | SUIT_H);
+        case 21: return (CARD_Q << 4 | SUIT_S);
+        case 22: return (CARD_Q << 4 | SUIT_D);
+        case 23: return (CARD_Q << 4 | SUIT_C);
+
+        case 24: return (CARD_K << 4 | SUIT_H);
+        case 25: return (CARD_K << 4 | SUIT_S);
+        case 26: return (CARD_K << 4 | SUIT_D);
+        case 27: return (CARD_K << 4 | SUIT_C);
+
+        case 28: return (CARD_A << 4 | SUIT_H);
+        case 29: return (CARD_A << 4 | SUIT_S);
+        case 30: return (CARD_A << 4 | SUIT_D);
+        case 31: return (CARD_A << 4 | SUIT_C);
+    }
+    
+    return 0;
+}
+
+//==============================================================================
+// Load and save NN's
+//==============================================================================
+
+void initialize_layer(Weight *l_out, int w, int h)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+    
+    int n = w*h;
+    for (int nn = 0; nn < n; ++n) {
+        l_out[nn].w = (dis(gen) - 0.5f) * MUTATION_SCALE;
+        l_out[nn].b = (dis(gen) - 0.5f) * MUTATION_SCALE;
+    }
+}
+
+void init_network(Network *n)
+{
+    initialize_layer(&(n->l0[0][0]), INPUT_SIZE, INTERNAL_SIZE);
+    initialize_layer(&(n->l1[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    initialize_layer(&(n->l2[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    initialize_layer(&(n->l3[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    initialize_layer(&(n->l4[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
+}
+
+void save_network(const std::string &path, Network *n)
+{
+    std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary);
+    file.write((char*)n,sizeof(Network));
+}
+
+bool load_network(const std::string &path, Network *n)
+{
+    std::ifstream file = std::ifstream(path, std::ios::in | std::ios::binary);
+    if (file.bad())
+        return false;
+    
+    file.seekg (0, std::ios::end);
+    uint32_t length = file.tellg();
+    file.seekg (0, std::ios::beg);
+    
+    if (length != sizeof(Network)) {
+        return false;
+    }
+    
+    file.read ((char*)n,sizeof(Network));
+    return true;
+}
+
+//==============================================================================
+// Breeding functions
+//==============================================================================
+
+void breed_layer(Weight *l_out, Weight *l1, Weight *l2, int w, int h)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+    
+    int n = w*h;
+    for (int nn = 0; nn < n; ++n) {
+        
+        if (dis(gen) <= MUTATION_RATE) {
+            l_out[nn].w += (dis(gen) - 0.5f) * MUTATION_SCALE;
+            l_out[nn].b += (dis(gen) - 0.5f) * MUTATION_SCALE;
+        } else {
+            if (dis(gen) >= 0.5f) {
+                l_out[nn].w = l1[nn].w;
+                l_out[nn].b = l1[nn].b;
+            } else {
+                l_out[nn].w = l2[nn].w;
+                l_out[nn].b = l2[nn].b;
+            }
+        }
+    }
+}
+
+void breed(Network *n_out, Network *n1, Network *n2)
+{
+    breed_layer(&(n_out->l0[0][0]), &(n1->l0[0][0]), &(n2->l0[0][0]), INPUT_SIZE, INTERNAL_SIZE);
+    breed_layer(&(n_out->l1[0][0]), &(n1->l1[0][0]), &(n2->l1[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    breed_layer(&(n_out->l2[0][0]), &(n1->l2[0][0]), &(n2->l2[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    breed_layer(&(n_out->l3[0][0]), &(n1->l3[0][0]), &(n2->l3[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    breed_layer(&(n_out->l4[0][0]), &(n1->l4[0][0]), &(n2->l4[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
+}
+
+//==============================================================================
+// Evaluation functions
+//==============================================================================
+
+void evaluate_layer(Weight *l, float *in, float *out, int w, int h)
+{
+    ::memset(out, 0, sizeof(float) * w);
+
+    // Convolve NN
+    for (int hh = 0; hh < h; ++hh) {        
+        for (int ww = 0; ww < w; ++ww) {
+            out[ww] += in[hh] * l[hh * w + ww].w;
+        }
+    }
+
+    // Bias NN
+    for (int hh = 0; hh < h; ++hh) {        
+        for (int ww = 0; ww < w; ++ww) {
+            out[ww] += l[hh * w + ww].b;
+        }
+    }
+    
+    // Activation functions
+    for (int ww = 0; ww < w; ++ww) {
+        out[ww] = 1.0f / (1.0f + std::exp(-out[ww]));
+    }
+}
+
+void evaluate(Network *n, float *in, float *out)
+{
+    float out_0[INTERNAL_SIZE];
+    evaluate_layer(&(n->l0[0][0]), in, out_0, INPUT_SIZE, INTERNAL_SIZE);
+    
+    float out_1[INTERNAL_SIZE];
+    evaluate_layer(&(n->l1[0][0]), out_0, out_1, INTERNAL_SIZE, INTERNAL_SIZE);
+
+    float out_2[INTERNAL_SIZE];
+    evaluate_layer(&(n->l2[0][0]), out_1, out_2, INTERNAL_SIZE, INTERNAL_SIZE);
+
+    float out_3[INTERNAL_SIZE];
+    evaluate_layer(&(n->l3[0][0]), out_2, out_3, INTERNAL_SIZE, INTERNAL_SIZE);
+
+    evaluate_layer(&(n->l4[0][0]), out_3, out, INTERNAL_SIZE, OUTPUT_SIZE);
 }
 
 //==============================================================================

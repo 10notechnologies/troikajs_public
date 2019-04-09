@@ -92,9 +92,12 @@ TEST(pass_cards,test_pass_cards_2)
     Card cards[2] = {0,0};
     ai_get_pass_cards (true, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, &my, cards);
     
+    std::cout << " AI Picked card: " << card_name(cards[0]) << std::endl;
+    std::cout << " AI Picked card: " << card_name(cards[1]) << std::endl;
+
     ASSERT_TRUE(cards[0] != cards[1]);
-    ASSERT_TRUE(cards[0] == card (CARD_T, SUIT_D));
-    ASSERT_TRUE(cards[1] == card (CARD_K, SUIT_D));
+    ASSERT_TRUE(cards[0] == card (CARD_5, SUIT_H));
+    ASSERT_TRUE(cards[1] == card (CARD_K, SUIT_H));
 }
 
 //==============================================================================
@@ -105,7 +108,7 @@ TEST(pass_cards,test_pass_cards_3)
     Hand    my = { 0 };
     
     // Partner cards
-    add_card (&my, card (CARD_5, SUIT_H));
+    add_card (&my, card (CARD_J, SUIT_H));
     add_card (&my, card (CARD_T, SUIT_D));
     add_card (&my, card (CARD_K, SUIT_C));
     add_card (&my, card (CARD_Q, SUIT_C));
@@ -119,9 +122,12 @@ TEST(pass_cards,test_pass_cards_3)
     Card cards[2] = {0,0};
     ai_get_pass_cards (true, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, &my, cards);
     
+    std::cout << " AI Picked card: " << card_name(cards[0]) << std::endl;
+    std::cout << " AI Picked card: " << card_name(cards[1]) << std::endl;
+
     ASSERT_TRUE(cards[0] != cards[1]);
     ASSERT_TRUE(cards[0] == card (CARD_T, SUIT_D));
-    ASSERT_TRUE(cards[1] == card (CARD_5, SUIT_H));
+    ASSERT_TRUE(cards[1] == card (CARD_8, SUIT_C));
 }
 
 //==============================================================================

@@ -259,6 +259,7 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
                         Hand        *p1_played_cards,
                         Hand        *p2_played_cards,
                         Hand        *p3_played_cards,
+                        Hand        *my_passed_cards,
                         
                         Hand        *my_cards,
                         int32_t     my_index);
@@ -272,6 +273,7 @@ std::string plugin_ai_get_play_cards(   int32_t rule_pass_cards,
                                         std::vector<std::string> p1_played_cards_sv,
                                         std::vector<std::string> p2_played_cards_sv,
                                         std::vector<std::string> p3_played_cards_sv,
+                                        std::vector<std::string> my_passed_cards_sv,
                                         std::vector<std::string> my_cards_sv,
                                         int32_t my_index)
 {
@@ -291,6 +293,9 @@ std::string plugin_ai_get_play_cards(   int32_t rule_pass_cards,
     Hand p3_played_cards = { 0 };
     parse_cards_list(p3_played_cards_sv, &p3_played_cards);
 
+    Hand my_passed_cards = { 0 };
+    parse_cards_list(my_passed_cards_sv, &my_passed_cards);
+
     Hand my_cards = { 0 };
     parse_cards_list(my_cards_sv, &my_cards);
 
@@ -302,7 +307,7 @@ std::string plugin_ai_get_play_cards(   int32_t rule_pass_cards,
         card = ai_get_play_cards (  rule_pass_cards, rule_no_trump_bidout, rule_minimum_bid,
                                     highest_bidder, highest_bid,
                                     &p0_played_cards, &p1_played_cards, &p2_played_cards, &p3_played_cards,
-                                    &my_cards, my_index );
+                                    &my_passed_cards, &my_cards, my_index );
     }
     catch (std::exception &e) {
 #if DEBUG_LOG

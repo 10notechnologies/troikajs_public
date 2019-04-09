@@ -46,6 +46,7 @@ Card ai_get_play_cards (int32_t     rule_pass_cards,
                         Hand        *p1_played_cards,
                         Hand        *p2_played_cards,
                         Hand        *p3_played_cards,
+                        Hand        *my_passed_cards,
                         Hand        *my_cards,
                         int32_t     my_index);
 
@@ -95,6 +96,7 @@ TEST(get_play_cards,test_crash_wrong_turn)
                                     &p1,
                                     &p2,
                                     &p3,
+                                    nullptr,
                                     &my_cards,
                                     0);
         std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -149,6 +151,7 @@ TEST(get_play_cards,test_crash_javascript)
                                     &p1,
                                     &p2,
                                     &p3,
+                                    nullptr,
                                     &my_cards,
                                     1);
         std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -187,7 +190,7 @@ TEST(get_play_cards,test_simple_1)
     bid.bid = 0;
     bid.trump = TRUMP_N;
 
-    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, &my, 0);
+    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, nullptr, &my, 0);
 
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
     ASSERT_EQUALS(c, card (CARD_A, SUIT_H));
@@ -221,7 +224,7 @@ TEST(get_play_cards,test_simple_1_trump)
     bid.bid = 0;
     bid.trump = TRUMP_N;
 
-    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, &my, 0);
+    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, nullptr, &my, 0);
 
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
     //ASSERT_EQUALS(c, card (CARD_Q, SUIT_H));
@@ -261,7 +264,7 @@ TEST(get_play_cards,test_simple_partner_doesnt_outplay)
     bid.bid = 0;
     bid.trump = TRUMP_N;
 
-    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, &partner, 2);
+    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, nullptr, &partner, 2);
 
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
     ASSERT_EQUALS(c, card (CARD_T, SUIT_D));
@@ -300,7 +303,7 @@ TEST(get_play_cards,test_throws_worst_if_losing)
     bid.bid = 0;
     bid.trump = TRUMP_N;
 
-    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, &partner, 2);
+    Card c = ai_get_play_cards (RULE_PASS_CARDS, RULE_NO_TRUMP_BIDOUT, RULE_MINIMUM_BID, 0, bid, &p0, &p1, &p2, &p3, nullptr, &partner, 2);
 
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
     ASSERT_EQUALS(c, card (CARD_T, SUIT_D));
@@ -365,6 +368,7 @@ TEST(get_play_cards,test_throws_worst_if_losing)
 //                                &p1,
 //                                &p2,
 //                                &p3,
+//                                nullptr,
 //                                &my_cards,
 //                                1);
 //    std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -422,6 +426,7 @@ TEST(get_play_cards,test_play_ace_first_if_trump)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 0);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -479,6 +484,7 @@ TEST(get_play_cards,test_play_ace_first_if_trump_hearts)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 0);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -536,6 +542,7 @@ TEST(get_play_cards,test_play_single_suit_if_trump_not_hearts)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 0);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -597,6 +604,7 @@ TEST(get_play_cards,test_doesnt_play_high_spade)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -666,6 +674,7 @@ TEST(get_play_cards,test_lead_1)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -741,6 +750,7 @@ TEST(get_play_cards,test_lead_1)
 //                                &p1,
 //                                &p2,
 //                                &p3,
+//                                nullptr,
 //                                &my_cards,
 //                                2);
 //    std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -803,6 +813,7 @@ TEST(get_play_cards,test_lead_2)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
 
@@ -872,6 +883,7 @@ TEST(get_play_cards,dont_waste_ace)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -935,6 +947,7 @@ TEST(get_play_cards,dont_waste_ace_2)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 1);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1004,6 +1017,7 @@ TEST(get_play_cards,test_lead_not_hearts)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1072,6 +1086,7 @@ TEST(get_play_cards,test_lead_not_hearts_2)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1137,6 +1152,7 @@ TEST(get_play_cards,lead_not_with_5)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1202,6 +1218,7 @@ TEST(get_play_cards,lead_not_with_5_2)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 1);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1270,6 +1287,7 @@ TEST(get_play_cards,lead_not_with_5_3)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1332,6 +1350,7 @@ TEST(get_play_cards,test_lead_hearts)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1393,6 +1412,7 @@ TEST(get_play_cards,test_lead_ace_spades)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1459,6 +1479,7 @@ TEST(get_play_cards,test_lead_hearts_3)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 1);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1521,6 +1542,7 @@ TEST(get_play_cards,test_lead_hearts_4)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1582,6 +1604,7 @@ TEST(get_play_cards, test_ace_spades_1)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 1);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1643,6 +1666,7 @@ TEST(get_play_cards,test_waste_card)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1708,6 +1732,7 @@ TEST(get_play_cards,highest_to_lowest)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1776,6 +1801,7 @@ TEST(get_play_cards,dont_throw_lead)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1837,6 +1863,7 @@ TEST(get_play_cards,dont_bleed_trump)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1899,6 +1926,7 @@ TEST(get_play_cards,do_bleed_some_trump)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -1960,6 +1988,7 @@ TEST(get_play_cards,do_play_low_trumps)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 2);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -2022,6 +2051,7 @@ TEST(get_play_cards,parter_AH_always_play_5)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;
@@ -2086,6 +2116,7 @@ TEST(get_play_cards,parter_AH_always_play_5_handle_trump)
                                 &p1,
                                 &p2,
                                 &p3,
+                                nullptr,
                                 &my_cards,
                                 3);
     std::cout << " AI Picked card: " << card_name(c) << std::endl;

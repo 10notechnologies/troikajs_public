@@ -174,6 +174,12 @@ std::string suit_name (CardSuit c);
 //==============================================================================
 //==============================================================================
 
+Card bits_to_card(uint8_t b);
+uint8_t card_to_bits(Card c);
+
+//==============================================================================
+//==============================================================================
+
 int32_t count_suit_in_hand (Hand *hand, CardSuit s);
 void count_suits_in_hand (Hand *hand, int32_t suits[4]);
 float weighted_sum_for_suit(CardSuit suit, Hand *my_cards);
@@ -193,6 +199,38 @@ class AIException: public std::runtime_error {
 
 };
 
+//==============================================================================
+// Neural network types
+//==============================================================================
+
+#define MUTATION_RATE 0.05f
+#define MUTATION_SCALE 1.0f
+
+#define INPUT_SIZE 301
+#define INTERNAL_SIZE 256
+#define OUTPUT_SIZE 32
+
+struct Weight {
+    float w;
+    float b;
+};
+
+struct Network {  // [input/height][output/width]
+    Weight l0[INPUT_SIZE][INTERNAL_SIZE];
+    Weight l1[INTERNAL_SIZE][INTERNAL_SIZE];
+    Weight l2[INTERNAL_SIZE][INTERNAL_SIZE];
+    Weight l3[INTERNAL_SIZE][INTERNAL_SIZE];
+    Weight l4[INTERNAL_SIZE][OUTPUT_SIZE];
+};
+
+void init_network(Network *n);
+void save_network(const std::string &path, Network *n);
+bool load_network(const std::string &path, Network *n);
+
+void evaluate(Network *n, float *in, float *out);
+
+void breed(Network *n_out, Network *n1, Network *n2);
+void initialize_layer(Weight *l_out, int w, int h);
 
 //==============================================================================
 //==============================================================================

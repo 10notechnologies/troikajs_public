@@ -322,6 +322,7 @@ Card ai_get_play_cards  (int32_t    rule_pass_cards,
                         Hand        *p1_played_cards,
                         Hand        *p2_played_cards,
                         Hand        *p3_played_cards,
+                        Hand        *my_passed_cards,
                         Hand        *my_cards,
                         int32_t     my_index);
 
@@ -337,21 +338,22 @@ static PyObject* plugin_ai_get_play_cards(PyObject *self, PyObject *args)
         PyObject *p1_played_cards_obj;
         PyObject *p2_played_cards_obj;
         PyObject *p3_played_cards_obj;
+        PyObject *my_passed_cards_obj;
         PyObject *my_cards_obj;
         int32_t my_index;
 
         // Hands
         Hand p0_played_cards;
         p0_played_cards.num_cards = 0;
-
         Hand p1_played_cards;
         p1_played_cards.num_cards = 0;
-
         Hand p2_played_cards;
         p2_played_cards.num_cards = 0;
-
         Hand p3_played_cards;
         p3_played_cards.num_cards = 0;
+
+        Hand my_passed_cards;
+        my_passed_cards.num_cards = 0;
 
         Hand my_cards;
         my_cards.num_cards = 0;
@@ -360,7 +362,7 @@ static PyObject* plugin_ai_get_play_cards(PyObject *self, PyObject *args)
         // Parse arguments
         //
     
-        if (!PyArg_ParseTuple(args, "iiiisOOOOOi", 
+        if (!PyArg_ParseTuple(args, "iiiisOOOOOOi",
                 &rule_pass_cards, 
                 &rule_no_trump_bidout, 
                 &rule_minimum_bid, 
@@ -370,23 +372,20 @@ static PyObject* plugin_ai_get_play_cards(PyObject *self, PyObject *args)
                 &p1_played_cards_obj,
                 &p2_played_cards_obj,
                 &p3_played_cards_obj,
+                &my_passed_cards_obj,
                 &my_cards_obj,
                 &my_index)) {
             throw AIException("PyArg_ParseTuple failed");
         }
         
         // Parse cards
-//         std::cout << " A" << std::endl;
         parse_cards_list (p0_played_cards_obj, p0_played_cards);
-//         std::cout << " B" << std::endl;
         parse_cards_list (p1_played_cards_obj, p1_played_cards);
-//         std::cout << " C" << std::endl;
         parse_cards_list (p2_played_cards_obj, p2_played_cards);
-//         std::cout << " D" << std::endl;
         parse_cards_list (p3_played_cards_obj, p3_played_cards);
-//         std::cout << " E" << std::endl;
+        parse_cards_list (my_passed_cards_obj, my_passed_cards);
+
         parse_cards_list (my_cards_obj, my_cards);
-//         std::cout << " F" << std::endl;
 
         Bid highest_bid = chars_to_bid(highest_bid_str);
         
@@ -399,8 +398,9 @@ static PyObject* plugin_ai_get_play_cards(PyObject *self, PyObject *args)
         // Call the function
         Card out_card = ai_get_play_cards   (rule_pass_cards, rule_no_trump_bidout, rule_minimum_bid,
                                             highest_bidder, highest_bid,
-                                            &p0_played_cards, &p1_played_cards, 
-                                            &p2_played_cards, &p3_played_cards, 
+                                            &p0_played_cards, &p1_played_cards,
+                                            &p2_played_cards, &p3_played_cards,
+                                            &my_passed_cards,
                                             &my_cards, my_index);
           
         // Build result string
