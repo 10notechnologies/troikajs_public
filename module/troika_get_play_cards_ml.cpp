@@ -63,15 +63,16 @@ Card ai_get_play_cards_ml (int32_t     rule_pass_cards,
                            Hand        *my_passed_cards,
 
                            Hand        *my_cards,
-                           int32_t     my_index)
+                           int32_t     my_index,
+                           Network     *network = nullptr)
 {
 
     // Load network
-    if (networks[my_index] == nullptr) {
-        networks[my_index] = new Network();
-        if (!load_network(std::string("net")+std::to_string(my_index)+".bin", networks[my_index]))
-            init_network(networks[my_index]);
-    }
+//    if (networks[my_index] == nullptr) {
+//        networks[my_index] = new Network();
+//        if (!load_network(std::string("net0")+std::to_string(my_index)+".bin", networks[my_index]))
+//            throw AIException("rule_pass_cards out of range");
+//    }
 
     // Validate inputs
     if (rule_pass_cards != 0 && rule_pass_cards != 1) {
@@ -301,18 +302,18 @@ Card ai_get_play_cards_ml (int32_t     rule_pass_cards,
     in[32*9+8] = (highest_bid.trump == TRUMP_N) ? 1.0f : 0.0f;
     in[32*9+9] = highest_bid.bid;
     
-    in[32*9+10] = rule_pass_cards;
-    in[32*9+11] = rule_no_trump_bidout;
-    in[32*9+12] = rule_minimum_bid;
+//    in[32*9+10] = rule_pass_cards;
+//    in[32*9+11] = rule_no_trump_bidout;
+//    in[32*9+12] = rule_minimum_bid;
     
     // Run NN
-    evaluate(networks[my_index], in, out);
+    evaluate(network ? network : networks[my_index], in, out);
     
     // Find highest non-zero card
     float max_val = -std::numeric_limits<float>::infinity();
     int8_t max_index = -1;
     for (int oo = 0; oo < OUTPUT_SIZE; ++oo) {
-        if (out[oo] != 0.0f && out[oo] > max_val) {
+        if (out[oo] != 0.0f && out[oo] > max_val && index_of(my_cards, bits_to_card(oo)) >= 0) {
             max_val = out[oo];
             max_index = oo;
         }

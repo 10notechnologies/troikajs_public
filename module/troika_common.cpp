@@ -132,6 +132,8 @@ void remove_card (Hand *hand, int32_t index)
 {
     if (index >= hand->num_cards)
         throw AIException("index out of range");
+    if (index < 0)
+        throw AIException("index out of range");
 
     for (int32_t i = index; i < (hand->num_cards-1); ++i) {
         hand->cards[i] = hand->cards[i+1];
@@ -533,14 +535,14 @@ Card bits_to_card(uint8_t b)
 // Load and save NN's
 //==============================================================================
 
-void initialize_layer(Weight *l_out, int w, int h)
+void initialize_layer(Weight *l_out, int h, int w)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(0.0f, 1.0f);
     
     int n = w*h;
-    for (int nn = 0; nn < n; ++n) {
+    for (int nn = 0; nn < n; ++nn) {
         l_out[nn].w = (dis(gen) - 0.5f) * MUTATION_SCALE;
         l_out[nn].b = (dis(gen) - 0.5f) * MUTATION_SCALE;
     }
@@ -550,9 +552,7 @@ void init_network(Network *n)
 {
     initialize_layer(&(n->l0[0][0]), INPUT_SIZE, INTERNAL_SIZE);
     initialize_layer(&(n->l1[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    initialize_layer(&(n->l2[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    initialize_layer(&(n->l3[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    initialize_layer(&(n->l4[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
+    initialize_layer(&(n->l2[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
 }
 
 void save_network(const std::string &path, Network *n)
@@ -583,20 +583,21 @@ bool load_network(const std::string &path, Network *n)
 // Breeding functions
 //==============================================================================
 
-void breed_layer(Weight *l_out, Weight *l1, Weight *l2, int w, int h)
+void breed_layer(Weight *l_out, Weight *l1, Weight *l2, int h, int w)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(0.0f, 1.0f);
     
     int n = w*h;
-    for (int nn = 0; nn < n; ++n) {
+    for (int nn = 0; nn < n; ++nn) {
         
         if (dis(gen) <= MUTATION_RATE) {
             l_out[nn].w += (dis(gen) - 0.5f) * MUTATION_SCALE;
+        } else if (dis(gen) <= MUTATION_RATE) {
             l_out[nn].b += (dis(gen) - 0.5f) * MUTATION_SCALE;
         } else {
-            if (dis(gen) >= 0.5f) {
+            if (dis(gen) >= 0.015f) {
                 l_out[nn].w = l1[nn].w;
                 l_out[nn].b = l1[nn].b;
             } else {
@@ -611,16 +612,14 @@ void breed(Network *n_out, Network *n1, Network *n2)
 {
     breed_layer(&(n_out->l0[0][0]), &(n1->l0[0][0]), &(n2->l0[0][0]), INPUT_SIZE, INTERNAL_SIZE);
     breed_layer(&(n_out->l1[0][0]), &(n1->l1[0][0]), &(n2->l1[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    breed_layer(&(n_out->l2[0][0]), &(n1->l2[0][0]), &(n2->l2[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    breed_layer(&(n_out->l3[0][0]), &(n1->l3[0][0]), &(n2->l3[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    breed_layer(&(n_out->l4[0][0]), &(n1->l4[0][0]), &(n2->l4[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
+    breed_layer(&(n_out->l2[0][0]), &(n1->l2[0][0]), &(n2->l2[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
 }
 
 //==============================================================================
 // Evaluation functions
 //==============================================================================
 
-void evaluate_layer(Weight *l, float *in, float *out, int w, int h)
+void evaluate_layer(Weight *l, float *in, float *out, int h, int w)
 {
     ::memset(out, 0, sizeof(float) * w);
 
@@ -652,13 +651,8 @@ void evaluate(Network *n, float *in, float *out)
     float out_1[INTERNAL_SIZE];
     evaluate_layer(&(n->l1[0][0]), out_0, out_1, INTERNAL_SIZE, INTERNAL_SIZE);
 
-    float out_2[INTERNAL_SIZE];
-    evaluate_layer(&(n->l2[0][0]), out_1, out_2, INTERNAL_SIZE, INTERNAL_SIZE);
+    evaluate_layer(&(n->l2[0][0]), out_1, out, INTERNAL_SIZE, OUTPUT_SIZE);
 
-    float out_3[INTERNAL_SIZE];
-    evaluate_layer(&(n->l3[0][0]), out_2, out_3, INTERNAL_SIZE, INTERNAL_SIZE);
-
-    evaluate_layer(&(n->l4[0][0]), out_3, out, INTERNAL_SIZE, OUTPUT_SIZE);
 }
 
 //==============================================================================

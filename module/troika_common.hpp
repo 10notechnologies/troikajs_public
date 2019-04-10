@@ -206,8 +206,8 @@ class AIException: public std::runtime_error {
 #define MUTATION_RATE 0.05f
 #define MUTATION_SCALE 1.0f
 
-#define INPUT_SIZE 301
-#define INTERNAL_SIZE 256
+#define INPUT_SIZE 298
+#define INTERNAL_SIZE 128
 #define OUTPUT_SIZE 32
 
 struct Weight {
@@ -218,9 +218,7 @@ struct Weight {
 struct Network {  // [input/height][output/width]
     Weight l0[INPUT_SIZE][INTERNAL_SIZE];
     Weight l1[INTERNAL_SIZE][INTERNAL_SIZE];
-    Weight l2[INTERNAL_SIZE][INTERNAL_SIZE];
-    Weight l3[INTERNAL_SIZE][INTERNAL_SIZE];
-    Weight l4[INTERNAL_SIZE][OUTPUT_SIZE];
+    Weight l2[INTERNAL_SIZE][OUTPUT_SIZE];
 };
 
 void init_network(Network *n);
