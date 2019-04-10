@@ -552,7 +552,8 @@ void init_network(Network *n)
 {
     initialize_layer(&(n->l0[0][0]), INPUT_SIZE, INTERNAL_SIZE);
     initialize_layer(&(n->l1[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    initialize_layer(&(n->l2[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
+    initialize_layer(&(n->l2[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    initialize_layer(&(n->l3[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
 }
 
 void save_network(const std::string &path, Network *n)
@@ -612,7 +613,8 @@ void breed(Network *n_out, Network *n1, Network *n2)
 {
     breed_layer(&(n_out->l0[0][0]), &(n1->l0[0][0]), &(n2->l0[0][0]), INPUT_SIZE, INTERNAL_SIZE);
     breed_layer(&(n_out->l1[0][0]), &(n1->l1[0][0]), &(n2->l1[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
-    breed_layer(&(n_out->l2[0][0]), &(n1->l2[0][0]), &(n2->l2[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
+    breed_layer(&(n_out->l2[0][0]), &(n1->l2[0][0]), &(n2->l2[0][0]), INTERNAL_SIZE, INTERNAL_SIZE);
+    breed_layer(&(n_out->l3[0][0]), &(n1->l3[0][0]), &(n2->l3[0][0]), INTERNAL_SIZE, OUTPUT_SIZE);
 }
 
 //==============================================================================
@@ -651,7 +653,10 @@ void evaluate(Network *n, float *in, float *out)
     float out_1[INTERNAL_SIZE];
     evaluate_layer(&(n->l1[0][0]), out_0, out_1, INTERNAL_SIZE, INTERNAL_SIZE);
 
-    evaluate_layer(&(n->l2[0][0]), out_1, out, INTERNAL_SIZE, OUTPUT_SIZE);
+    float out_2[INTERNAL_SIZE];
+    evaluate_layer(&(n->l2[0][0]), out_1, out_2, INTERNAL_SIZE, INTERNAL_SIZE);
+
+    evaluate_layer(&(n->l3[0][0]), out_2, out, INTERNAL_SIZE, OUTPUT_SIZE);
 
 }
 

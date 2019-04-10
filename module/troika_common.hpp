@@ -203,7 +203,7 @@ class AIException: public std::runtime_error {
 // Neural network types
 //==============================================================================
 
-#define MUTATION_RATE 0.05f
+#define MUTATION_RATE 0.015f
 #define MUTATION_SCALE 1.0f
 
 #define INPUT_SIZE 298
@@ -218,7 +218,8 @@ struct Weight {
 struct Network {  // [input/height][output/width]
     Weight l0[INPUT_SIZE][INTERNAL_SIZE];
     Weight l1[INTERNAL_SIZE][INTERNAL_SIZE];
-    Weight l2[INTERNAL_SIZE][OUTPUT_SIZE];
+    Weight l2[INTERNAL_SIZE][INTERNAL_SIZE];
+    Weight l3[INTERNAL_SIZE][OUTPUT_SIZE];
 };
 
 void init_network(Network *n);

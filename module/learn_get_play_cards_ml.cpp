@@ -264,13 +264,9 @@ int run_ml_hand (Network *network)
     int8_t opposing_team = (bid_winner_index+1) % 2;
 
     int8_t multiplier = 1;
-    int8_t end_score = 52;
     if (player_bids[bid_winner_index].trump == TRUMP_N) {
         multiplier = 2;
-        end_score = rule_no_trump_bidout;
     }
-
-    int8_t thresh = 52 - rule_minimum_bid;
 
     // Bidding team
     int scores[2] = {0};
@@ -282,8 +278,7 @@ int run_ml_hand (Network *network)
     }
 
     // Opposing team
-    if (scores[opposing_team] < thresh || round_scores[opposing_team] < 0)
-        scores[opposing_team] += round_scores[opposing_team];
+    scores[opposing_team] += round_scores[opposing_team];
 
     return scores[0] - scores[1];
 }
