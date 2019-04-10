@@ -29,6 +29,7 @@
 #include <vector>
 #include <random>
 #include <future>
+#include <algorithm>
 #include "troika_common.hpp"
 
 extern Network *networks[4];
